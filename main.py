@@ -36,17 +36,26 @@ class ChatRequest(BaseModel):
     message: str
     history: List[MessageDict] = []
 
+HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+}
+
 # --- COINGECKO FONKSİYONLARIMIZ ---
 async def get_crypto_price(coin_id: str):
     url = f"https://api.coingecko.com/api/v3/simple/price?ids={coin_id}&vs_currencies=usd"
     async with httpx.AsyncClient() as http_client:
-        response = await http_client.get(url)
+        response = await http_client.get(url, headers=HEADERS, timeout=5.0)
         return response.json().get(coin_id, {}).get("usd")
 
 async def get_crypto_history(coin_id: str, days: int = 7):
     url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart?vs_currency=usd&days={days}"
     async with httpx.AsyncClient() as http_client:
-        response = await http_client.get(url)
+        response = await http_client.get(url, headers=HEADERS, timeout=5.0)
+
+        if response.status_code == 429:
+            print(f"🚨 UYARI: CoinGecko Grafik API engellendi!")
+            return None # Grafik çizilemezse boş dönsün, sistemi çökertmesin
+
         prices = [item[1] for item in response.json().get("prices", [])]
         return prices
 
