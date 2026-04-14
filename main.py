@@ -43,21 +43,53 @@ HEADERS = {
 # --- COINGECKO FONKSİYONLARIMIZ ---
 async def get_crypto_price(coin_id: str):
     url = f"https://api.coingecko.com/api/v3/simple/price?ids={coin_id}&vs_currencies=usd"
-    async with httpx.AsyncClient() as http_client:
-        response = await http_client.get(url, headers=HEADERS, timeout=5.0)
-        return response.json().get(coin_id, {}).get("usd")
+    print(f"\n{'='*50}\n🔍 DEBUG [FİYAT]: {coin_id} için CoinGecko'ya gidiliyor...\nURL: {url}")
+
+    try:
+        async with httpx.AsyncClient() as http_client:
+            response = await http_client.get(url, headers=HEADERS, timeout=10.0)
+
+            print(f"📡 HTTP STATUS: {response.status_code}")
+            print(f"📦 RAW RESPONSE: {response.text}")
+
+            if response.status_code == 200:
+                data = response.json()
+                price = data.get(coin_id, {}).get("usd")
+                print(f"✅ BAŞARILI: {coin_id} Fiyatı = {price}$")
+                return price
+            else:
+                print(f"🚨 HATA: CoinGecko {response.status_code} döndürdü. Yedek fiyata geçiliyor.")
+                return FALLBACK_PRICES.get(coin_id.lower(), 100.0)
+
+    except Exception as e:
+        print(f"💥 KRİTİK HATA (Fiyat): İstek atılamadı! Detay: {e}")
+        return FALLBACK_PRICES.get(coin_id.lower(), 100.0)
+    finally:
+        print('='*50 + '\n')
 
 async def get_crypto_history(coin_id: str, days: int = 7):
     url = f"https://api.coingecko.com/api/v3/coins/{coin_id}/market_chart?vs_currency=usd&days={days}"
-    async with httpx.AsyncClient() as http_client:
-        response = await http_client.get(url, headers=HEADERS, timeout=5.0)
+    print(f"\n{'='*50}\n📈 DEBUG [GRAFİK]: {coin_id} geçmiş verisi çekiliyor...\nURL: {url}")
 
-        if response.status_code == 429:
-            print(f"🚨 UYARI: CoinGecko Grafik API engellendi!")
-            return None # Grafik çizilemezse boş dönsün, sistemi çökertmesin
+    try:
+        async with httpx.AsyncClient() as http_client:
+            response = await http_client.get(url, headers=HEADERS, timeout=10.0)
 
-        prices = [item[1] for item in response.json().get("prices", [])]
-        return prices
+            print(f"📡 HTTP STATUS: {response.status_code}")
+
+            if response.status_code == 200:
+                prices = [item[1] for item in response.json().get("prices", [])]
+                print(f"✅ BAŞARILI: {len(prices)} adet veri noktası çekildi.")
+                return prices
+            else:
+                print(f"🚨 HATA: Grafik API {response.status_code} döndürdü. Detay: {response.text[:100]}...")
+                return None
+
+    except Exception as e:
+        print(f"💥 KRİTİK HATA (Grafik): İstek atılamadı! Detay: {e}")
+        return None
+    finally:
+        print('='*50 + '\n')
 
 # --- OPENAI İÇİN ARAÇ (TOOL) TANIMLAMASI ---
 tools = [
