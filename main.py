@@ -244,4 +244,14 @@ async def chat_with_ai(request: ChatRequest):
         except Exception as e:
             yield f"SİSTEM BEKLENMEYEN HATA: {str(e)}"
 
-    return StreamingResponse(response_generator(), media_type="text/plain")
+    # main.py'nin en alt kısmı:
+    return StreamingResponse(
+        response_generator(),
+        media_type="text/plain",
+        # YENİ: Vercel ve Render'a "Veriyi bekleme, anında akıt!" diyen sihirli ayarlar
+        headers={
+            "X-Accel-Buffering": "no",
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+        }
+    )
