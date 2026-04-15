@@ -298,8 +298,8 @@ async def chat_with_ai(request: ChatRequest):
     # main.py'nin en alt kısmı:
     return StreamingResponse(
         response_generator(),
-        media_type="text/plain",
-        # YENİ: Vercel ve Render'a "Veriyi bekleme, anında akıt!" diyen sihirli ayarlar
+        # BURASI DEĞİŞTİ: "text/plain" yerine "text/event-stream" oldu
+        media_type="text/event-stream",
         headers={
             "X-Accel-Buffering": "no",
             "Cache-Control": "no-cache",
