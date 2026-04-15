@@ -13,8 +13,15 @@ from typing import List
 
 load_dotenv()
 api_key = os.getenv("OPENAI_API_KEY")
+CG_API_KEY = os.getenv("COINGECKO_API_KEY")
+
 if not api_key:
     raise RuntimeError("HATA: OPENAI_API_KEY bulunamadı!")
+
+if not CG_API_KEY:
+    raise RuntimeError("HATA: COINGECKO_API_KEY bulunamadı!")
+
+
 
 client = AsyncOpenAI(api_key=api_key)
 
@@ -40,6 +47,9 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 }
 
+if CG_API_KEY:
+    HEADERS["x-cg-demo-api-key"] = CG_API_KEY
+
 # --- COINGECKO FONKSİYONLARIMIZ ---
 async def get_crypto_price(coin_id: str):
     url = f"https://api.coingecko.com/api/v3/simple/price?ids={coin_id}&vs_currencies=usd"
@@ -59,11 +69,11 @@ async def get_crypto_price(coin_id: str):
                 return price
             else:
                 print(f"🚨 HATA: CoinGecko {response.status_code} döndürdü. Yedek fiyata geçiliyor.")
-                return FALLBACK_PRICES.get(coin_id.lower(), 100.0)
+                return 0
 
     except Exception as e:
         print(f"💥 KRİTİK HATA (Fiyat): İstek atılamadı! Detay: {e}")
-        return FALLBACK_PRICES.get(coin_id.lower(), 100.0)
+        return 0
     finally:
         print('='*50 + '\n')
 
