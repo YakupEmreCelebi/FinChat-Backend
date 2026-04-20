@@ -188,12 +188,12 @@ async def get_portfolio_distribution(assets: list):
 @app.post("/chat")
 async def chat_with_ai(request: ChatRequest):
 
-    # GÜNCELLENDİ: AI'a kesin ve katı kurallar koyuyoruz.
+    # GÜNCELLENDİ: AI'a özür dilememesini, arayüzün onun adına çizeceğini öğretiyoruz.
     messages = [{"role": "system", "content": """Sen FinChat adında profesyonel bir yapay zeka finans asistanısın. 
     ÇOK ÖNEMLİ KURALLAR:
-    1. Kullanıcı elindeki coin miktarlarından (örn: '0.25 BTC', 'portföyüm') bahsederse, ASLA kendi içinde matematiksel hesaplama yapma!
-    2. ASLA metin karakterleriyle (███ gibi) veya markdown ile grafik çizmeye çalışma!
-    3. Böyle bir durumda SADECE VE KESİNLİKLE `calculate_portfolio` aracını çağır ve sonucu bekle. İşlemleri senin yerine sistem yapacak."""}]
+    1. Kullanıcı kendi coin miktarlarından (örn: '0.25 BTC') bahsederse, ASLA kendi içinde matematiksel hesaplama yapma! SADECE `calculate_portfolio` aracını çağır.
+    2. Kullanıcı grafik isterse `get_crypto_data` aracını kullan. Veriyi araca ilettikten sonra kullanıcıya "İşte istediğiniz grafik:" diyerek GURURLA yanıt ver. 
+    3. KESİNLİKLE "grafik çizemem" veya "görsel oluşturamam" diyerek özür dileme! Arayüz (Frontend) senin sağladığın verilerle grafiği otomatik çizecektir. Sadece metin karakterleriyle (███ gibi) ilkel çizimler yapmaktan kaçın."""}]
 
     for msg in request.history:
         messages.append({"role": msg.role, "content": msg.content})
