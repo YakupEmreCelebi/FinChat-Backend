@@ -4,7 +4,7 @@ This repository contains the backend service for **FinChat**, an AI-powered fina
 
 🔗 **Frontend Repository:** https://github.com/YakupEmreCelebi/FinChat-Frontend
 
-🌍 **Live Deployment:** https://finchat-pcsqm1pir-yakupemrecelebis-projects.vercel.app/
+🌍 **Live Deployment:** https://finchat-ochre.vercel.app/
 
 ## 🏗️ Architecture & Technologies
 - **Framework:** Python, FastAPI, HTTPX
