@@ -3,6 +3,7 @@
 This repository contains the backend service for **FinChat**, an AI-powered financial assistant capable of fetching real-time cryptocurrency data and generating insightful market analyses.
 
 🔗 **Frontend Repository:** [https://github.com/YakupEmreCelebi/FinChat-Frontend]
+
 🌍 **Live Deployment:** [https://finchat-fxjj2bcnb-yakupemrecelebis-projects.vercel.app/]
 
 ## Architecture & Technologies
