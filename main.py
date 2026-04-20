@@ -107,7 +107,6 @@ tools = [
         "type": "function",
         "function": {
             "name": "get_crypto_data",
-            # GÜNCELLEDİK: Bu aracı ne zaman KULLANMAMASI gerektiğini kesin bir dille belirttik.
             "description": "SADECE tek bir kripto paranın piyasa trendini veya ÇİZGİ GRAFİĞİNİ görmek istediğinde kullan. EĞER KULLANICI KENDİ PORTFÖYÜNDEN, CÜZDANINDAN VEYA ELİNDEKİ MİKTARLARDAN (örn: 0.5 BTC) BAHSEDİYORSA BU ARACI ASLA KULLANMA!",
             "parameters": {
                 "type": "object",
@@ -115,6 +114,11 @@ tools = [
                     "coin_id": {
                         "type": "string",
                         "description": "CoinGecko ID'si (Örn: bitcoin, ethereum, solana)"
+                    },
+                    # YENİ EKLENEN KISIM: Yapay zekaya zaman dilimini hesaplamasını söylüyoruz
+                    "days": {
+                        "type": "integer",
+                        "description": "Kullanıcının istediği geçmiş veri gün sayısı. Örn: '1 ay' derse 30, '2 hafta' derse 14, '1 yıl' derse 365, '5 gün' derse 5 gönder. Eğer kullanıcı süre belirtmezse varsayılan olarak 7 gönder."
                     }
                 },
                 "required": ["coin_id"]
@@ -222,8 +226,11 @@ async def chat_with_ai(request: ChatRequest):
                     # 1. Araç: Fiyat ve Grafik
                     if function_name == "get_crypto_data":
                         coin_id = arguments.get("coin_id", "bitcoin")
+
+                        days = arguments.get("days", 7)
+
                         price = await get_crypto_price(coin_id)
-                        chart_data = await get_crypto_history(coin_id, 7)
+                        chart_data = await get_crypto_history(coin_id, days)
                         chart_data_to_send = chart_data
 
                         messages.append({
