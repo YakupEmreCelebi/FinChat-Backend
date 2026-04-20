@@ -190,12 +190,12 @@ async def chat_with_ai(request: ChatRequest):
 
     # GÜNCELLENDİ: AI'a özür dilememesini, arayüzün onun adına çizeceğini öğretiyoruz.
     # GÜNCELLENDİ: AI'a Markdown resim tag'i (![alt](url)) kullanmasını kesin olarak yasaklıyoruz.
-    messages = [{"role": "system", "content": """Sen FinChat adında profesyonel bir yapay zeka finans asistanısın. 
+    messages = [{"role": "system", "content": """Sen FinChat adında profesyonel, bilgili ve konuşkan bir yapay zeka finans asistanısın. 
     ÇOK ÖNEMLİ KURALLAR:
     1. Kullanıcı kendi coin miktarlarından (örn: '0.25 BTC') bahsederse, ASLA kendi içinde matematiksel hesaplama yapma! SADECE `calculate_portfolio` aracını çağır.
-    2. Kullanıcı grafik isterse `get_crypto_data` aracını kullan. Veriyi araca ilettikten sonra kullanıcıya SADECE "İşte istediğiniz grafik:" diyerek yanıt ver.
-    3. KESİNLİKLE "grafik çizemem" diyerek özür dileme.
-    4. KESİNLİKLE Markdown resim ekleme kodu (örneğin: ![grafik](url) veya metin karakterleriyle çizim) KULLANMA! Senin yerine grafiği zaten sistem (arayüz) çizecektir. Sadece düz metinle cevap ver."""}]
+    2. Kullanıcı FİYAT veya GRAFİK sorarsa KESİNLİKLE `get_crypto_data` aracını kullan.
+    3. Aracı kullandıktan sonra kısa cevaplar verme! Kullanıcıya gelen veri üzerinden detaylı, profesyonel ve bilgilendirici bir finansal yorum yap. Fiyatı söyle, trendi yorumla.
+    4. KESİNLİKLE Markdown resim ekleme kodu (örneğin: ![grafik](url) veya metin karakterleriyle çizim) KULLANMA! Senin yerine grafiği zaten arayüz çizecektir. Sen sadece zengin metin analizine odaklan."""}]
 
     for msg in request.history:
         messages.append({"role": msg.role, "content": msg.content})
