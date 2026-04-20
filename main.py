@@ -189,11 +189,13 @@ async def get_portfolio_distribution(assets: list):
 async def chat_with_ai(request: ChatRequest):
 
     # GÜNCELLENDİ: AI'a özür dilememesini, arayüzün onun adına çizeceğini öğretiyoruz.
+    # GÜNCELLENDİ: AI'a Markdown resim tag'i (![alt](url)) kullanmasını kesin olarak yasaklıyoruz.
     messages = [{"role": "system", "content": """Sen FinChat adında profesyonel bir yapay zeka finans asistanısın. 
     ÇOK ÖNEMLİ KURALLAR:
     1. Kullanıcı kendi coin miktarlarından (örn: '0.25 BTC') bahsederse, ASLA kendi içinde matematiksel hesaplama yapma! SADECE `calculate_portfolio` aracını çağır.
-    2. Kullanıcı grafik isterse `get_crypto_data` aracını kullan. Veriyi araca ilettikten sonra kullanıcıya "İşte istediğiniz grafik:" diyerek GURURLA yanıt ver. 
-    3. KESİNLİKLE "grafik çizemem" veya "görsel oluşturamam" diyerek özür dileme! Arayüz (Frontend) senin sağladığın verilerle grafiği otomatik çizecektir. Sadece metin karakterleriyle (███ gibi) ilkel çizimler yapmaktan kaçın."""}]
+    2. Kullanıcı grafik isterse `get_crypto_data` aracını kullan. Veriyi araca ilettikten sonra kullanıcıya SADECE "İşte istediğiniz grafik:" diyerek yanıt ver.
+    3. KESİNLİKLE "grafik çizemem" diyerek özür dileme.
+    4. KESİNLİKLE Markdown resim ekleme kodu (örneğin: ![grafik](url) veya metin karakterleriyle çizim) KULLANMA! Senin yerine grafiği zaten sistem (arayüz) çizecektir. Sadece düz metinle cevap ver."""}]
 
     for msg in request.history:
         messages.append({"role": msg.role, "content": msg.content})
@@ -231,7 +233,15 @@ async def chat_with_ai(request: ChatRequest):
 
                         price = await get_crypto_price(coin_id)
                         chart_data = await get_crypto_history(coin_id, days)
-                        chart_data_to_send = chart_data
+
+                        interval_label = "Saat" if days <= 90 else "Gün"
+                        chart_title = f"{days} Günlük Fiyat Trendi ({'Saatlik' if days <= 90 else 'Günlük'} Veri)"
+
+                        chart_data_to_send = {
+                            "prices": chart_data,
+                            "title": chart_title,
+                            "interval": interval_label
+                        }
 
                         messages.append({
                             "role": "tool",
