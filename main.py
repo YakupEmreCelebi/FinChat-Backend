@@ -50,7 +50,7 @@ HEADERS = {
 if CG_API_KEY:
     HEADERS["x-cg-demo-api-key"] = CG_API_KEY
 
-# --- COINGECKO FONKSİYONLARIMIZ ---
+# --- COINGECKO Functions ---
 async def get_crypto_price(coin_id: str):
     url = f"https://api.coingecko.com/api/v3/simple/price?ids={coin_id}&vs_currencies=usd"
     print(f"\n{'='*50}\n🔍 DEBUG [FİYAT]: {coin_id} için CoinGecko'ya gidiliyor...\nURL: {url}")
@@ -101,7 +101,7 @@ async def get_crypto_history(coin_id: str, days: int = 7):
     finally:
         print('='*50 + '\n')
 
-# --- OPENAI İÇİN ARAÇ (TOOL) TANIMLAMASI ---
+# --- OPENAI TOOL
 tools = [
     {
         "type": "function",
@@ -115,7 +115,7 @@ tools = [
                         "type": "string",
                         "description": "CoinGecko ID'si (Örn: bitcoin, ethereum, solana)"
                     },
-                    # YENİ EKLENEN KISIM: Yapay zekaya zaman dilimini hesaplamasını söylüyoruz
+
                     "days": {
                         "type": "integer",
                         "description": "Kullanıcının istediği geçmiş veri gün sayısı. Örn: '1 ay' derse 30, '2 hafta' derse 14, '1 yıl' derse 365, '5 gün' derse 5 gönder. Eğer kullanıcı süre belirtmezse varsayılan olarak 7 gönder."
@@ -158,10 +158,9 @@ tools = [
     }
 ]
 
-# YENİ: Portföy Hesaplama Aracı Fonksiyonu
+
 COIN_COLORS = {"bitcoin": "#F7931A", "ethereum": "#627EEA", "solana": "#14F195", "tether": "#26A17B"}
 
-# DİKKAT: assets artık dict değil, list
 async def get_portfolio_distribution(assets: list):
     items = []
     total_value = 0
@@ -188,8 +187,7 @@ async def get_portfolio_distribution(assets: list):
 @app.post("/chat")
 async def chat_with_ai(request: ChatRequest):
 
-    # GÜNCELLENDİ: AI'a özür dilememesini, arayüzün onun adına çizeceğini öğretiyoruz.
-    # GÜNCELLENDİ: AI'a Markdown resim tag'i (![alt](url)) kullanmasını kesin olarak yasaklıyoruz.
+
     messages = [{"role": "system", "content": """Sen FinChat adında profesyonel, bilgili ve konuşkan bir yapay zeka finans asistanısın. 
     ÇOK ÖNEMLİ KURALLAR:
     1. Kullanıcı kendi coin miktarlarından (örn: '0.25 BTC') bahsederse, ASLA kendi içinde matematiksel hesaplama yapma! SADECE `calculate_portfolio` aracını çağır.
@@ -214,7 +212,7 @@ async def chat_with_ai(request: ChatRequest):
 
             ai_message = response.choices[0].message
 
-            # ADIM 2: Eğer yapay zeka aracımızı kullanmak istiyorsa...
+
             if ai_message.tool_calls:
                 messages.append(ai_message.model_dump(exclude_none=True))
 
@@ -225,7 +223,7 @@ async def chat_with_ai(request: ChatRequest):
                     function_name = tool_call.function.name
                     arguments = json.loads(tool_call.function.arguments)
 
-                    # 1. Araç: Fiyat ve Grafik
+                    # 1. TOOL: Price and Graph
                     if function_name == "get_crypto_data":
                         coin_id = arguments.get("coin_id", "bitcoin")
 
@@ -250,7 +248,7 @@ async def chat_with_ai(request: ChatRequest):
                             "content": json.dumps({"price": price, "chart_data": chart_data})
                         })
 
-                    # 2. Araç: PORTFÖY ARACI
+                    # 2. TOOL: Portfolio
                     elif function_name == "calculate_portfolio":
 
                         print("\n" + "="*50)
@@ -272,7 +270,7 @@ async def chat_with_ai(request: ChatRequest):
                             })
                         })
 
-                # ADIM 3: Tüm araçlara cevap verdiğimize göre daktilo (stream) başlat
+
                 stream = await client.chat.completions.create(
                     model="gpt-4o-mini",
                     messages=messages,
@@ -284,7 +282,6 @@ async def chat_with_ai(request: ChatRequest):
                         yield chunk.choices[0].delta.content
 
 
-                # Metin bitince [METADATA] etiketiyle arayüze veri yolla
                 if chart_data_to_send or portfolio_data_to_send:
                     metadata = {}
                     if chart_data_to_send:
@@ -295,7 +292,6 @@ async def chat_with_ai(request: ChatRequest):
                     yield f"\n[METADATA]{json.dumps(metadata)}"
 
             else:
-                # Araç gerekmiyorsa doğrudan daktilo akışı başlat
                 stream = await client.chat.completions.create(
                     model="gpt-4o-mini",
                     messages=messages,
@@ -312,10 +308,8 @@ async def chat_with_ai(request: ChatRequest):
         except Exception as e:
             yield f"SİSTEM BEKLENMEYEN HATA: {str(e)}"
 
-    # main.py'nin en alt kısmı:
     return StreamingResponse(
         response_generator(),
-        # BURASI DEĞİŞTİ: "text/plain" yerine "text/event-stream" oldu
         media_type="text/event-stream",
         headers={
             "X-Accel-Buffering": "no",
